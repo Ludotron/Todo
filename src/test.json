@@ -1,0 +1,32 @@
+{
+    "projects": [
+        {
+            "name": "inbox",
+            "required": true
+        },
+        {
+            "name": "project1",
+            "required": false
+        }
+    ],
+    "todos": [
+        {
+            "title": "a title",
+            "dueDate": "a formatted date",
+            "project": "attached project name",
+            "description": "a description",
+            "priority": "low | normal | high",
+            "notes": "plenty of notes text",
+            "checkList": [
+                {
+                    "label": "a label",
+                    "checked": false
+                },
+                {
+                    "label": "another label",
+                    "checked": true
+                }
+            ]
+        }
+    ]
+}
