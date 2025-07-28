@@ -1,66 +1,49 @@
 import { default as pm } from "./projectManager.js";
 import { default as tm } from "./todoManager.js";
-import { default as dm } from "./domManager.js";
+import { default as dc } from "./domComposer.js";
 
 const appManager = (function AppManager() {
-  function load() {
-    pm.init();
-    dm.showAllProjects(pm.retrieveAllProjects());
-    tm.init();
-    dm.showAllTodos(tm.retrieveAllTodos());
-  }
-  //Project interface functions:
-  function createANewProject(name) {
-    pm.create(name);
-    dm.updateAllProjects(pm.retrieveAllProjects());
-  }
-  function deleteAProject(uuid) {
-    pm.kill(uuid);
-    dm.updateAllProjects(pm.retrieveAllProjects());
-  }
-  function getProjects() {
-    return pm.projectList();
-  }
-  function getDefaultProjectName() {
-    return pm.defaultProjectName;
-  }
-  function getDefaultProjectUUID() {
-    return pm.defaultProjectUUID;
-  }
-  function updateAfterProjectDeleted(uuid) {
-    //implementation required.
-  }
-  //Todo interface functions:
-  function completeATodo(uuid) {
-    tm.kill(uuid);
-    dm.updateAllTodos(tm.retrieveAllTodos());
-  }
-  function getTodo(uuid) {
-    return tm.retrieveATodo(uuid);
-  }
-  function getPriorities() {
-    return tm.priorityList();
-  }
-  function getATemplateTodo() {
-    return tm.createAnEmptyTodo();
-  }
-  function updateATodo(uuid, data) {
-    tm.update(uuid, data);
+  function start() {
+    //TEMP. Hard code the todo and project's load process,
+    //This should be local Storage JSON loading instead.
+    pm.create("Work");
+    pm.create("Personal");
+    pm.create("Top secret");
+
+    let data = {
+      title: "Ne rien faire",
+      dueDate: "2025-08-01",
+      description: "Quoi d'autre?",
+      projectName: pm.defaultName,
+      priority: null,
+      notes:
+        "Ça ne sert à rien de déblatérer des heures: quand on ne sait pas, on ne sait pas.",
+    };
+    tm.create(data);
+    data = {
+      title: "Do",
+      dueDate: "2025-07-27",
+      description: "Do it now!",
+      projectName: pm.defaultName,
+      priority: tm.priorities.high,
+      notes: "Do or die as 30 Seconds to Mars sings.",
+    };
+    tm.create(data);
+    data = {
+      title: "Write",
+      dueDate: "2034-12-12",
+      description: "Make a great story.",
+      projectName: pm.defaultName,
+      priority: tm.priorities.high,
+      notes: "Every story starts with pains.",
+    };
+    tm.create(data);
+    //TEMP end.
+    dc.build();
   }
 
   return {
-    load,
-    createANewProject,
-    deleteAProject,
-    getProjects,
-    getDefaultProjectName,
-    getDefaultProjectUUID,
-    updateAfterProjectDeleted,
-    completeATodo,
-    getTodo,
-    getPriorities,
-    getATemplateTodo,
-    updateATodo,
+    start,
   };
 })();
 

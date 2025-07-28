@@ -1,4 +1,4 @@
 import "./styles.css";
-import appManager from "./appManager.js";
+import { default as am } from "./appManager.js";
 
-appManager.load();
+am.start();
