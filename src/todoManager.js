@@ -1,5 +1,5 @@
 const todoManager = (function TodoManager() {
-  let todos = [];
+  let todos = []; //array of {uuid, title, dueDate, description, projectName, priority, notes }.
   const priorities = { low: "low", normal: "normal", high: "high" };
 
   function getAllTodos() {
@@ -41,6 +41,36 @@ const todoManager = (function TodoManager() {
       console.table(todos);
     }
   }
+  function update(uuid, data) {
+    console.log(todos[uuid]);
+    let index;
+    for (let i in todos) {
+      if (todos[i].uuid === uuid) {
+        index = i;
+      }
+    }
+    if (index !== undefined) {
+      if (data.title) {
+        todos[index].title = data.title;
+      }
+      if (data.dueDate) {
+        todos[index].dueDate = data.dueDate;
+      }
+      if (data.description) {
+        todos[index].description = data.description;
+      }
+      if (data.projectName) {
+        todos[index].projectName = data.projectName;
+      }
+      if (data.priority) {
+        todos[index].priority = data.priority;
+      }
+      if (data.notes) {
+        todos[index].notes = data.notes;
+      }
+    }
+    console.log(todos[uuid]);
+  }
 
   return {
     priorities,
@@ -48,6 +78,7 @@ const todoManager = (function TodoManager() {
     getTodo,
     create,
     kill,
+    update,
   };
 })();
 
