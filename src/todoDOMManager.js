@@ -16,12 +16,11 @@ const todoDOMManager = (function TodoDOMManager() {
     notes: "notes",
   };
   let records = [];
-  //Those 2 saved avoid, at each rebuild(),
-  //asking for container to append the main DOM element,
-  //query for the list to replace.
+  //Those saved properties are used to handle user editing dom content.
   let savedContainer;
   let savedTodoList;
   let savedEditedDOM;
+  let savedNewedDOM;
 
   //records management helper function to ensure proper setting of values.
   function recordDomAt(uuid, dom) {
@@ -46,14 +45,19 @@ const todoDOMManager = (function TodoDOMManager() {
 
     //Event handling:
     function handleNewClicked(event) {
-      const item = createAnUnfoldedNewItem();
+      const item = createAnUnfoldedNewItem(
+        tm.getTemplateTodo(tm.getTemplateTodo()),
+      );
       replaceDomAt("new", item);
     }
     dNew.addEventListener("click", handleNewClicked);
 
     return dItem;
   }
-  function createAnUnfoldedNewItem() {
+  function createAnUnfoldedNewItem(template) {
+    //This data will be sent to tm to create a new todo,
+    //This will be filled along editing new dom.
+    let newedData = {};
     const dItem = document.createElement("div");
     dItem.classList.add("todo-item");
 
@@ -63,7 +67,42 @@ const todoDOMManager = (function TodoDOMManager() {
     dItem.appendChild(dOK);
 
     const dContent = document.createElement("div");
-    dContent.innerText = "Let's create a new todo!";
+    dContent.classList.add("todo-content");
+    const pTitle = document.createElement("p");
+    pTitle.dataset.tag = tags.title;
+    pTitle.innerText = template.title;
+    newedData.title = pTitle.innerText;
+    dContent.appendChild(pTitle);
+    const pDueDate = document.createElement("p");
+    pDueDate.dataset.tag = tags.dueDate;
+    pDueDate.innerText = template.dueDate;
+    newedData.dueDate = pDueDate.innerText;
+    dContent.appendChild(pDueDate);
+    const pDescription = document.createElement("p");
+    pDescription.dataset.tag = tags.description;
+    pDescription.innerText = template.description;
+    newedData.description = pDescription.innerText;
+    dContent.appendChild(pDescription);
+    const pProjectName = document.createElement("p");
+    pProjectName.dataset.tag = tags.projectName;
+    pProjectName.innerText = template.projectName;
+    newedData.projectName = pProjectName.innerText;
+    dContent.appendChild(pProjectName);
+    const pPriority = document.createElement("p");
+    pPriority.dataset.tag = tags.priority;
+    pPriority.innerText = template.priority;
+    newedData.priority = pPriority.innerText;
+    dContent.appendChild(pPriority);
+    const pNotes = document.createElement("p");
+    pNotes.dataset.tag = tags.notes;
+    if (!template.notes || template.notes == "") {
+      pNotes.innerText = "(any notes?)";
+      newedData.notes = "";
+    } else {
+      pNotes.innerText = template.notes;
+      newedData.notes = pNotes.innerText;
+    }
+    dContent.appendChild(pNotes);
     dItem.appendChild(dContent);
 
     const dCancel = document.createElement("div");
@@ -74,15 +113,7 @@ const todoDOMManager = (function TodoDOMManager() {
     //Event handling:
     function handleOkClicked(event) {
       //Create a new todo then:
-      let data = {
-        title: "Création!",
-        dueDate: "2027-04-04",
-        description: "À défaut de edit hard-coded.",
-        projectName: pm.defaultName,
-        priority: tm.priorities.high,
-        notes: "Le plus difficile reste à faire! Alors fais!",
-      };
-      tm.create(data);
+      tm.create(newedData);
       console.table(tm.getAllTodos());
 
       const item = createAFoldedNewItem();
@@ -96,23 +127,29 @@ const todoDOMManager = (function TodoDOMManager() {
       replaceDomAt("new", item);
     }
     dCancel.addEventListener("click", handleCancelClicked);
+    function handleContentClicked(event) {
+      const clickedDOM = event.target;
+      const clickedTag = event.target.dataset.tag;
+      if (savedEditedDOM) {
+        if (clickedDOM !== savedEditedDOM) {
+          uneditAndUpdateNewedData(savedEditedDOM, newedData);
+          edit(clickedDOM);
+        }
+      } else {
+        edit(clickedDOM);
+      }
+    }
+    dContent.addEventListener("click", handleContentClicked);
+    function handleEnter(event) {
+      if (savedEditedDOM) {
+        if (event.key == "Enter") {
+          uneditAndUpdateNewedData(savedEditedDOM, newedData);
+        }
+      }
+    }
+    dContent.addEventListener("keypress", handleEnter);
 
     return dItem;
-  }
-  //Helper functions to create small DOM elements DRY.
-  function createATitle(title, isEditable = false) {
-    let item;
-    if (isEditable) {
-      item = document.createElement("input");
-      item.type = "text";
-      item.dataset.tag = tags.title;
-      item.value = title;
-    } else {
-      item = document.createElement("p");
-      item.dataset.tag = tags.title;
-      item.innerText = title;
-    }
-    return item;
   }
   function edit(dom) {
     console.log("edit!");
@@ -194,13 +231,14 @@ const todoDOMManager = (function TodoDOMManager() {
       }
     }
   }
-  function unedit(dom) {
+  function uneditAndUpdate(dom, uuid) {
     switch (dom.dataset.tag) {
       case tags.title: {
         let item = document.createElement("p");
         item.dataset.tag = tags.title;
         item.innerText = dom.value;
         let data = { title: item.innerText };
+        tm.update(uuid, data);
         dom.replaceWith(item);
         savedEditedDOM = null;
         break;
@@ -209,6 +247,8 @@ const todoDOMManager = (function TodoDOMManager() {
         let item = document.createElement("p");
         item.dataset.tag = tags.dueDate;
         item.innerText = dom.value;
+        let data = { dueDate: item.innerText };
+        tm.update(uuid, data);
         dom.replaceWith(item);
         savedEditedDOM = null;
         break;
@@ -217,6 +257,8 @@ const todoDOMManager = (function TodoDOMManager() {
         let item = document.createElement("p");
         item.dataset.tag = tags.description;
         item.innerText = dom.value;
+        let data = { description: item.innerText };
+        tm.update(uuid, data);
         dom.replaceWith(item);
         savedEditedDOM = null;
         break;
@@ -225,6 +267,8 @@ const todoDOMManager = (function TodoDOMManager() {
         let item = document.createElement("p");
         item.dataset.tag = tags.projectName;
         item.innerText = dom.value;
+        let data = { projectName: item.innerText };
+        tm.update(uuid, data);
         dom.replaceWith(item);
         savedEditedDOM = null;
         break;
@@ -233,6 +277,76 @@ const todoDOMManager = (function TodoDOMManager() {
         let item = document.createElement("p");
         item.dataset.tag = tags.priority;
         item.innerText = dom.value;
+        let data = { priority: item.innerText };
+        tm.update(uuid, data);
+        dom.replaceWith(item);
+        savedEditedDOM = null;
+        break;
+      }
+      case tags.notes: {
+        let item = document.createElement("p");
+        item.dataset.tag = tags.notes;
+        let data;
+        if (!dom.value || dom.value == "") {
+          item.innerText = "(any notes?)";
+          data = { notes: "" };
+        } else {
+          item.innerText = dom.value;
+          data = { notes: item.innerText };
+        }
+        tm.update(uuid, data);
+        dom.replaceWith(item);
+        savedEditedDOM = null;
+        break;
+      }
+      default: {
+        console.log("I'm quite disappointed to end here @unedit()... ");
+      }
+    }
+  }
+  function uneditAndUpdateNewedData(dom, newedData) {
+    switch (dom.dataset.tag) {
+      case tags.title: {
+        let item = document.createElement("p");
+        item.dataset.tag = tags.title;
+        item.innerText = dom.value;
+        newedData.title = item.innerText;
+        dom.replaceWith(item);
+        savedEditedDOM = null;
+        break;
+      }
+      case tags.dueDate: {
+        let item = document.createElement("p");
+        item.dataset.tag = tags.dueDate;
+        item.innerText = dom.value;
+        newedData.dueDate = item.innerText;
+        dom.replaceWith(item);
+        savedEditedDOM = null;
+        break;
+      }
+      case tags.description: {
+        let item = document.createElement("p");
+        item.dataset.tag = tags.description;
+        item.innerText = dom.value;
+        newedData.description = item.innerText;
+        dom.replaceWith(item);
+        savedEditedDOM = null;
+        break;
+      }
+      case tags.projectName: {
+        let item = document.createElement("p");
+        item.dataset.tag = tags.projectName;
+        item.innerText = dom.value;
+        newedData.projectName = item.innerText;
+        dom.replaceWith(item);
+        savedEditedDOM = null;
+        break;
+      }
+      case tags.priority: {
+        let item = document.createElement("p");
+        item.dataset.tag = tags.priority;
+        item.innerText = dom.value;
+        newedData.priority = item.innerText;
         dom.replaceWith(item);
         savedEditedDOM = null;
         break;
@@ -242,15 +356,19 @@ const todoDOMManager = (function TodoDOMManager() {
         item.dataset.tag = tags.notes;
         if (!dom.value || dom.value == "") {
           item.innerText = "(any notes?)";
+          newedData.notes = "";
         } else {
           item.innerText = dom.value;
+          newedData.notes = item.innerText;
         }
         dom.replaceWith(item);
         savedEditedDOM = null;
         break;
       }
       default: {
-        console.log("I'm quite disappointed to end here @unedit()... ");
+        console.log(
+          "I'm quite disappointed to end here @uneditAndUpdateNewedData()... ",
+        );
       }
     }
   }
@@ -368,7 +486,7 @@ const todoDOMManager = (function TodoDOMManager() {
       const clickedUUID = event.target.parentElement.parentElement.dataset.uuid;
       if (savedEditedDOM) {
         if (clickedDOM !== savedEditedDOM) {
-          unedit(savedEditedDOM);
+          uneditAndUpdate(savedEditedDOM, clickedUUID);
           edit(clickedDOM);
         }
       } else {
@@ -379,7 +497,9 @@ const todoDOMManager = (function TodoDOMManager() {
     function handleEnter(event) {
       if (savedEditedDOM) {
         if (event.key == "Enter") {
-          unedit(savedEditedDOM);
+          const clickedUUID =
+            event.target.parentElement.parentElement.dataset.uuid;
+          uneditAndUpdate(savedEditedDOM, clickedUUID);
         }
       }
     }

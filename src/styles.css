@@ -41,3 +41,24 @@ body {
   cursor: pointer;
   color: red;
 }
+
+.project-item {
+  display: grid;
+  grid-template-columns: 1fr 5em;
+}
+.project-item > p {
+  margin: 0;
+}
+.project-button {
+  text-align: right;
+}
+.project-button:hover {
+  cursor: pointer;
+  color: red;
+}
+.project-edit {
+  background-color: navy;
+  color: beige;
+  border: 1px dotted beige;
+  box-shadow: none;
+}

@@ -1,4 +1,5 @@
 import { default as tdm } from "./todoDOMManager.js";
+import { default as pdm } from "./projectDOMManager.js";
 
 const domComposer = (function DomComposer() {
   const titleArea = document.querySelector("#title-area");
@@ -6,7 +7,7 @@ const domComposer = (function DomComposer() {
   const todoArea = document.querySelector("#todo-area");
 
   function build() {
-    projectArea.innerText = "projects";
+    pdm.buildInto(projectArea);
     tdm.buildInto(todoArea);
   }
 

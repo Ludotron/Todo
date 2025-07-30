@@ -1,3 +1,5 @@
+import { default as pm } from "./projectManager.js";
+
 const todoManager = (function TodoManager() {
   let todos = []; //array of {uuid, title, dueDate, description, projectName, priority, notes }.
   const priorities = { low: "low", normal: "normal", high: "high" };
@@ -14,6 +16,16 @@ const todoManager = (function TodoManager() {
       }
     }
     return null;
+  }
+  function getTemplateTodo() {
+    return {
+      title: "Title?",
+      dueDate: "1970-01-01",
+      description: "Description?",
+      projectName: pm.defaultName,
+      priority: priorities.normal,
+      notes: "",
+    };
   }
   function create(data) {
     let td = {
@@ -42,13 +54,13 @@ const todoManager = (function TodoManager() {
     }
   }
   function update(uuid, data) {
-    console.log(todos[uuid]);
     let index;
     for (let i in todos) {
       if (todos[i].uuid === uuid) {
         index = i;
       }
     }
+    console.log(todos[index]);
     if (index !== undefined) {
       if (data.title) {
         todos[index].title = data.title;
@@ -69,13 +81,14 @@ const todoManager = (function TodoManager() {
         todos[index].notes = data.notes;
       }
     }
-    console.log(todos[uuid]);
+    console.log(todos[index]);
   }
 
   return {
     priorities,
     getAllTodos,
     getTodo,
+    getTemplateTodo,
     create,
     kill,
     update,
