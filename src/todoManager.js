@@ -4,6 +4,22 @@ const todoManager = (function TodoManager() {
   let todos = []; //array of {uuid, title, dueDate, description, projectName, priority, notes }.
   const priorities = { low: "low", normal: "normal", high: "high" };
 
+  const storage = window["sessionStorage"];
+  const storageKey = "todo-todos";
+
+  //Starage functions :
+  function init() {
+    load();
+  }
+  function load() {
+    todos = JSON.parse(storage.getItem(storageKey));
+  }
+  function save() {
+    let stringed = JSON.stringify(todos);
+    storage.setItem(storageKey, stringed);
+    console.table(storage.getItem(storageKey));
+  }
+
   function getAllTodos() {
     return todos;
   }
@@ -38,6 +54,7 @@ const todoManager = (function TodoManager() {
       notes: data.notes,
     };
     todos.push(td);
+    save();
   }
   function kill(uuid) {
     let index;
@@ -52,6 +69,7 @@ const todoManager = (function TodoManager() {
       todos.splice(index, 1);
       console.table(todos);
     }
+    save();
   }
   function update(uuid, data) {
     let index;
@@ -81,10 +99,19 @@ const todoManager = (function TodoManager() {
         todos[index].notes = data.notes;
       }
     }
-    console.log(todos[index]);
+    save();
+  }
+  function updateAllAfterProjectDeletion(projectName) {
+    for (let t of todos) {
+      if (t.projectName === projectName) {
+        t.projectName = pm.defaultName;
+      }
+    }
+    save();
   }
 
   return {
+    init,
     priorities,
     getAllTodos,
     getTodo,
@@ -92,6 +119,7 @@ const todoManager = (function TodoManager() {
     create,
     kill,
     update,
+    updateAllAfterProjectDeletion,
   };
 })();
 

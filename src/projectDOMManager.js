@@ -1,4 +1,6 @@
 import { default as pm } from "./projectManager.js";
+import { default as tm } from "./todoManager.js";
+import { default as tdm } from "./todoDOMManager.js";
 
 const projectDOMManager = (function ProjectDOMManager() {
   let savedContainer;
@@ -8,9 +10,8 @@ const projectDOMManager = (function ProjectDOMManager() {
     const dProjectList = document.createElement("div");
     dProjectList.id = "project-list";
 
-    const ps = pm.projects;
-    if (ps) {
-      for (const p of ps) {
+    if (pm.getProjects()) {
+      for (const p of pm.getProjects()) {
         const dItem = document.createElement("div");
         dItem.classList.add("project-item");
         const pName = document.createElement("p");
@@ -20,6 +21,14 @@ const projectDOMManager = (function ProjectDOMManager() {
         dKill.classList.add("project-button");
         dKill.innerText = "[X]";
         dItem.appendChild(dKill);
+
+        function handleKillClicked(event) {
+          pm.kill(pName.innerText);
+          rebuild();
+          tm.updateAllAfterProjectDeletion(pName.innerText);
+          tdm.rebuild();
+        }
+        dKill.addEventListener("click", handleKillClicked);
 
         dProjectList.appendChild(dItem);
       }
@@ -60,6 +69,7 @@ const projectDOMManager = (function ProjectDOMManager() {
 
   return {
     buildInto,
+    rebuild,
   };
 })();
 

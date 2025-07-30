@@ -188,7 +188,7 @@ const todoDOMManager = (function TodoDOMManager() {
         let item = document.createElement("select");
         item.classList.add("todo-edit-projectName");
         item.dataset.tag = tags.projectName;
-        for (const p of pm.projects) {
+        for (const p of pm.getProjects()) {
           let o = document.createElement("option");
           o.value = o.innerText = p.name;
           if (o.value === dom.innerText) {
@@ -535,6 +535,7 @@ const todoDOMManager = (function TodoDOMManager() {
 
   return {
     buildInto,
+    rebuild,
   };
 })();
 
